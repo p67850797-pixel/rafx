@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Download Game Emulator</title>
+<style>
+  :root{--bg:#000;--card:#0d0d0d;--line:#2a2a2a;--text:#f2f2f2;--muted:#9a9a9a;--btn:#111}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,Arial,sans-serif}
+  header{padding:26px 16px 10px;text-align:center}
+  h1{margin:0;font-size:1.8rem}
+  header p{color:var(--muted);margin:6px 0 0;font-size:1.05rem}
+  .wrap{max-width:1200px;margin:auto;padding:0 16px}
+  .search{display:block;width:100%;max-width:420px;margin:8px auto;background:var(--card);border:1px solid var(--line);color:var(--text);padding:13px 16px;border-radius:12px;font-size:1.1rem}
+  .filters{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;padding:8px 0}
+  .btn{background:var(--btn);color:var(--text);border:1px solid var(--line);padding:12px 20px;border-radius:12px;font-size:1.05rem;cursor:pointer;text-decoration:none;display:inline-block;text-align:center;transition:.2s}
+  .btn:hover,.btn.active{background:#fff;color:#000;border-color:#fff}
+  .btn.off{opacity:.4;pointer-events:none}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:18px;padding:12px 0}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden;display:flex;flex-direction:column}
+  .card img{width:100%;height:180px;object-fit:cover;background:#151515}
+  .cover{width:100%;height:180px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;color:#fff;text-align:center;padding:8px}
+  .cover b{font-size:2.4rem;letter-spacing:2px}
+  .cover small{font-size:.85rem;opacity:.8;letter-spacing:1px}
+  .info{padding:18px;display:flex;flex-direction:column;gap:8px;flex:1}
+  .info h3{margin:0;font-size:1.2rem}
+  .tag{font-size:.9rem;color:var(--muted)}
+  .info .btn{margin-top:auto}
+  .notice{margin:18px 0;padding:14px 16px;border:1px solid var(--line);border-radius:12px;color:var(--muted);font-size:1rem}
+  .empty{text-align:center;color:var(--muted);padding:30px}
+  footer{text-align:center;color:var(--muted);font-size:.8rem;padding:24px 16px}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Download Game Emulator</h1>
+  <p>PSP • PS2 • PS Vita</p>
+</header>
+
+<main class="wrap">
+  <input class="search" id="search" placeholder="Cari game...">
+  <div class="filters" id="filters"></div>
+  <section class="grid" id="grid"></section>
+  <div class="notice"><strong>Catatan:</strong> LAPORKAN BUG/LINK TIDAK BERFUNGSI BISA KESINI YAA (601112775338).</div>
+</main>
+
+<footer>by.rafzx</footer>
+
+<script>
+// @ts-nocheck
+/* ===== EDIT DAFTAR GAME DI SINI =====
+   title   : nama game
+   console : PSP | PS1 | PS2 | PS Vita | REQUEST | EMULATOR
+   size    : ukuran file (contoh "1.2 GB")
+   link    : alamat unduhan (Google Drive, Mediafire, dll)
+   image   : (opsional) link gambar sampul, mis. "https://.../tekken6.jpg" atau "img/tekken6.jpg"
+             kosong / link rusak = otomatis pakai sampul hitam berwarna + inisial
+   Tinggal salin 1 baris { ... }, lalu isi link-nya.
+   Kalau link dikosongkan, tombol jadi "Segera".
+*/
+const GAMES = [
+  { title:"AXTHERX2",   console:"EMULATOR", size:"80MB", link:"https://besargaji.com/Dgfp", image:"https://i.imgur.com/yKV1IVR.jpeg" },
+  { title:"Vita3k",     console:"EMULATOR", size:"80MB", link:"https://besargaji.com/la396hL", image:"https://i.imgur.com/8RYa3gL.jpeg" },
+  { title:"ppsspp",     console:"EMULATOR", size:"40MB", link:"https://besargaji.com/MM2rF", image:"https://i.imgur.com/kW9tmeJ.jpeg" },
+  { title:"Ultraman Nexus",   console:"PS2",     size:"200MB", link:"https://besargaji.com/mGNH", image:"https://i.imgur.com/5Ce7Ru2.jpeg" },
+  { title:"Gintama",          console:"PS Vita", size:"2GB", link:"https://besargaji.com/JeHalu2C21", image:"https://i.imgur.com/eFJ1mjn.jpeg" },
+  { title:"Tekken 6",         console:"PSP",     size:"800MB", link:"https://besargaji.com/DT5y09", image:"https://i.imgur.com/kVM1OXB.jpeg" },
+  { title:"Ultraman Evolution2",          console:"PS2",     size:"200MB", link:"https://besargaji.com/qbQmiiBXW", image:"https://i.imgur.com/fS5SZYQ.jpeg" },
+  { title:"Ultraman Evolution0",          console:"PSP",     size:"200MB", link:"https://besargaji.com/q8iFWm1yZU", image:"https://i.imgur.com/XAxSVY2.jpeg" },
+  { title:"Moto GP",          console:"PSP",     size:"203MB", link:"https://besargaji.com/nF6ynaT3", image:"https://i.imgur.com/5VGx0eV.jpeg" },
+  { title:"Moto GP08",          console:"PS2",     size:"970MB", link:"https://besargaji.com/3zZA", image:"https://i.imgur.com/fd7YM0r.jpeg" },
+  { title:"Downhil",          console:"PS2",     size:"700MB", link:"https://besargaji.com/44r4", image:"https://i.imgur.com/N8uAJto.jpeg" },
+  { title:"7 Sins",          console:"PS2",     size:"1,2GB", link:"https://besargaji.com/lxoajrdp76", image:"https://i.imgur.com/s56BG4k.jpeg" },
+  { title:"Guitar Hero Lagu-Lagu Indonesia",          console:"PS2",     size:"3GB", link:"https://besargaji.com/xvMlMSP", image:"https://i.imgur.com/9UwvHNo.jpeg" },
+  { title:"God Hand",          console:"PS2",     size:"1GB", link:"https://besargaji.com/IENTs9seL", image:"https://i.imgur.com/M2ezc1q.jpeg" },
+  { title:"Pes6",          console:"PSP",     size:"700MB", link:"https://besargaji.com/zaj8GNoOWBS", image:"https://i.imgur.com/i4kz2iN.jpeg" },
+  { title:"Mtx Motottrax",          console:"PSP",     size:"", link:"https://besargaji.com/fdtlqwUD", image:"https://i.imgur.com/8NeJlEZ.jpeg" },
+  { title:"Kilzone Liberation",          console:"PSP",     size:"", link:"https://besargaji.com/IknZXLAI0Bv", image:"https://i.imgur.com/eze56TH.jpeg" },
+  { title:"Michel Jackshon",          console:"PSP",     size:"", link:"https://besargaji.com/UCtx", image:"https://i.imgur.com/0AcOS1R.jpeg" },
+  { title:"Attack On Titan2",          console:"PS Vita",     size:"2GB", link:"https://besargaji.com/yXAxxUij", image:"https://i.imgur.com/idLTlCA.jpeg" },
+  { title:"Gost Recon Predator",          console:"PSP",     size:"", link:"https://besargaji.com/UuCNzvSgP", image:"https://i.imgur.com/yKpzRW8.jpeg" },
+  { title:"Nfs Undergroud2",          console:"PS2",     size:"2GB", link:"https://besargaji.com/129KjBmViUnH", image:"https://i.imgur.com/ELYj7UA.jpeg" },
+  { title:"Bleach7",          console:"PSP",     size:"1GB", link:"https://besargaji.com/2gz8P", image:"https://i.imgur.com/tvS8Vvs.png" },
+  { title:"Peter Jacckshon King-Kong",          console:"PSP",     size:"", link:"https://besargaji.com/1mE", image:"https://i.imgur.com/bYLHRT2.jpeg" },
+  { title:"Beacon",          console:"EMULATOR",     size:"70MB", link:"https://besargaji.com/6U31OeE", image:"https://i.imgur.com/5nRItKT.jpeg" },
+  { title:"Midnight Club3",          console:"PSP",     size:"1,2GB", link:"https://besargaji.com/RVY", image:"https://i.imgur.com/j1LBksA.jpeg" },
+  { title:"Lego Indiana Jones",          console:"PSP",     size:"1GB", link:"https://besargaji.com/FXOlT", image:"https://i.imgur.com/Bnikcgm.jpeg" },
+  { title:"Naruto Ultimate Heroes3",          console:"PSP",     size:"1,1GB", link:"https://besargaji.com/bRij0oUE", image:"https://i.imgur.com/yfYyYed.jpeg" },
+  { title:"Mortal Kombat9",          console:"PS Vita",     size:"3GB", link:"https://besargaji.com/TBXVtC6", image:"https://i.imgur.com/g5YbP1B.jpeg" },
+  { title:"Naruto Ultimate Ninja5",          console:"PS2",     size:"1,6GB", link:"https://besargaji.com/36hhsF", image:"https://i.imgur.com/JStgE2e.jpeg" },
+  { title:"Lego Star Wars2",          console:"PSP",     size:"1GB", link:"https://besargaji.com/cjElGn5cyHsD", image:"https://i.imgur.com/pac2Ktp.jpeg" },
+  { title:"Basara heroes2",          console:"PS2",     size:"1,9GB", link:"https://besargaji.com/B1iK", image:"https://i.imgur.com/z4OCqgN.jpeg" },
+  { title:"Uncharted",          console:"PS Vita",     size:"3GB", link:"https://besargaji.com/0vJ9Uv", image:"https://i.imgur.com/97SQrma.jpeg" },
+  { title:"Moto GP13",          console:"PS Vita",     size:"1,3GB", link:"https://besargaji.com/ZJut2YWnRvN", image:"https://i.imgur.com/6s4g3lZ.jpeg" },
+  { title:"God Of War Collection",          console:"PS Vita",     size:"3GB", link:"https://besargaji.com/y1fXI5I", image:"https://i.imgur.com/BSywbD4.jpeg" },
+  { title:"AssassinS CreeDii Liberation",          console:"PS Vita",     size:"2,1GB", link:"https://besargaji.com/nc9G0JTM", image:"https://i.imgur.com/xrHBk14.jpeg" },
+  { title:"Attack On Titan1",          console:"PS Vita",     size:"2GB", link:"https://besargaji.com/1apNFX54XZZy", image:"https://i.imgur.com/5w0A9e9.jpeg" },
+  { title:"Call Of Dutty",          console:"PS Vita",     size:"3GB", link:"https://besargaji.com/Ubsi2KrbcPy", image:"https://i.imgur.com/j5ELSwX.jpeg" },
+  { title:"Dragon Ball Z",          console:"PS Vita",     size:"2GB", link:"https://besargaji.com/CUw1", image:"https://i.imgur.com/olMzqGI.jpeg" },
+  { title:"Fifa 15",          console:"PS Vita",     size:"2,3GB", link:"https://besargaji.com/sdqlcEtgsk", image:"https://i.imgur.com/2Qcf8D7.jpeg" },
+  { title:"Fifa 13",          console:"PS Vita",     size:"2GB", link:"https://besargaji.com/uCcFyKG", image:"https://i.imgur.com/QFpcNPZ.jpeg" },
+  { title:"Gravity Rush",          console:"PS Vita",     size:"2GB", link:"https://besargaji.com/x1EFR", image:"https://i.imgur.com/7R3lld4.jpeg" },
+  { title:"J-Stars Victory",          console:"PS Vita",     size:"1,9GB", link:"https://besargaji.com/MlVivd", image:"https://i.imgur.com/GxuXzXK.jpeg" },
+  { title:"Minecraft",          console:"PS Vita",     size:"1GB", link:"https://besargaji.com/8MhSRm", image:"https://i.imgur.com/oKXz5B8.jpeg" },
+  { title:"Pes 2014",          console:"PSP",     size:"980MB", link:"https://besargaji.com/swtbyGBJfBHP", image:"https://i.imgur.com/iQnCHwo.jpeg" },
+  { title:"Mortal Kombat",          console:"PSP",     size:"841MB", link:"https://besargaji.com/yq58d5EnLGu", image:"https://i.imgur.com/sHrKrot.jpeg" },
+  { title:"God Of War1",          console:"PS2",     size:"200MB", link:"https://besargaji.com/JqpYaAwB", image:"https://i.imgur.com/4fbdkui.jpeg" },
+  { title:"Ben 10",          console:"PSP",     size:"200MB", link:"https://besargaji.com/yHNB79Owr20", image:"https://i.imgur.com/7DbkTD4.jpeg" },
+  { title:"Resident Evil 4",          console:"PS2",     size:"2,9GB", link:"https://besargaji.com/qLUF0u", image:"https://i.imgur.com/W0N8Big.jpeg" },
+  { title:"UP",          console:"PSP",     size:"50MB", link:"https://besargaji.com/PH3CIpXcJO", image:"https://i.imgur.com/jSxJDYD.jpeg" },
+  { title:"Toy Story",          console:"PSP",     size:"100MB", link:"https://besargaji.com/OceEE3dmL7a", image:"https://i.imgur.com/3A0Uzkh.jpeg" },
+  { title:"God Of War 2",          console:"PS2",     size:"1GB", link:"https://besargaji.com/xem9Jz", image:"https://i.imgur.com/lhsG2Ad.jpeg" },
+  { title:"Lego Batman",          console:"PSP",     size:"144GB", link:"https://besargaji.com/b5Q34A7UTt34", image:"https://i.imgur.com/0ecJlD2.jpeg" },
+  { title:"The Warior",          console:"PSP",     size:"1,4GB", link:"https://besargaji.com/BiVzEqa", image:"https://i.imgur.com/YSlIiNh.jpeg" },
+  { title:"REQUEST GAME",     console:"REQUEST", size:"1.000 Cuman", link:"https://sociabuzz.com/rafzx_/tribe", image:"https://i.imgur.com/0V7dSCQ.jpeg" },
+];
+/* ===== SELESAI ===== */
+
+const grid=document.getElementById('grid');
+const filtersEl=document.getElementById('filters');
+const searchEl=document.getElementById('search');
+let current='SEMUA';
+
+const consoles=['SEMUA',...new Set(GAMES.map(g=>g.console))];
+consoles.forEach(c=>{
+  const b=document.createElement('button');
+  b.className='btn'+(c===current?' active':'');
+  b.textContent=c;
+  b.onclick=()=>{current=c;[...filtersEl.children].forEach(x=>x.classList.toggle('active',x===b));render();};
+  filtersEl.appendChild(b);
+});
+
+const COLORS={'PSP':['#1a1a1a','#3b3b3b'],'PS1':['#0b1f3a','#1d4f91'],'PS2':['#1b1033','#4a2a8a'],'PS Vita':['#06262b','#127a8a'],'REQUEST':['#2b0a0a','#8a1d1d'],'EMULATOR':['#102010','#2f7a2f']};
+function initials(t){return t.split(/\s+/).filter(Boolean).slice(0,2).map(w=>w[0]).join('').toUpperCase()||'?';}
+function makeCover(g){
+  const fallback=()=>{
+    const c=document.createElement('div');c.className='cover';
+    const col=COLORS[g.console]||['#111','#333'];
+    c.style.background='linear-gradient(135deg,'+col[0]+','+col[1]+')';
+    const b=document.createElement('b');b.textContent=initials(g.title);
+    const sm=document.createElement('small');sm.textContent=g.console;
+    c.append(b,sm);return c;
+  };
+  if(!g.image)return fallback();
+  const im=document.createElement('img');im.src=g.image;im.alt=g.title;im.loading='lazy';
+  im.onerror=()=>im.replaceWith(fallback());
+  return im;
+}
+
+function render(){
+  const q=searchEl.value.toLowerCase().trim();
+  grid.innerHTML='';
+  const list=GAMES.filter(g=>(current==='SEMUA'||g.console===current)&&g.title.toLowerCase().includes(q));
+  if(!list.length){grid.innerHTML='<div class="empty">Game tidak ditemukan.</div>';return;}
+  list.forEach(g=>{
+    const card=document.createElement('div');card.className='card';
+    card.appendChild(makeCover(g));
+    const info=document.createElement('div');info.className='info';
+    const h=document.createElement('h3');h.textContent=g.title;
+    const t=document.createElement('span');t.className='tag';t.textContent=g.console+(g.size?' • '+g.size:'');
+    const a=document.createElement('a');a.className='btn';
+    if(g.link){a.href=g.link;a.target='_blank';a.rel='noopener';a.textContent=g.console==='REQUEST'?'📩 Request':'⬇ Download';}
+    else{a.classList.add('off');a.textContent='Segera';}
+    info.append(h,t,a);card.appendChild(info);grid.appendChild(card);
+  });
+}
+searchEl.addEventListener('input',render);
+render();
+</script>
+</body>
+</html>
